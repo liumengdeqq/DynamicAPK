@@ -34,6 +34,7 @@ public class SysHacks extends Hack.HackDeclaration implements Hack.AssertionFail
     public static HackedMethod Application_attach;
     public static HackedClass<android.content.res.AssetManager> AssetManager;
     public static HackedMethod AssetManager_addAssetPath;
+     public static HackedMethod AssetManager_addAssetPathAsSharedLibrary;
     public static HackedClass<Object> ContextImpl;
     public static HackedField<Object, android.content.res.Resources> ContextImpl_mResources;
     public static HackedField<Object, android.content.res.Resources.Theme> ContextImpl_mTheme;
@@ -169,6 +170,9 @@ public class SysHacks extends Hack.HackDeclaration implements Hack.AssertionFail
         ActivityThread_currentActivityThread = ActivityThread.method("currentActivityThread", new Class[0]);
         AssetManager_addAssetPath = AssetManager.method("addAssetPath", String.class);
         Application_attach = Application.method("attach", Context.class);
+          if(Build.VERSION.SDK_INT>=24) {
+            AssetManager_addAssetPathAsSharedLibrary = AssetManager.method("addAssetPathAsSharedLibrary", String.class);
+        }
     }
 
     public static void allConstructors() throws HackAssertionException {

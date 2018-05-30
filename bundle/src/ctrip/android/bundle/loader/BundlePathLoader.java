@@ -45,9 +45,16 @@ public class BundlePathLoader {
             throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException,InstantiationException,
             InvocationTargetException, NoSuchMethodException, IOException {
         if (!files.isEmpty()) {
-            if (Build.VERSION.SDK_INT >= 23) {
+             if (Build.VERSION.SDK_INT >= 25) {
+                try {
+                    V25.install(loader, files, dexDir,isHotFix);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }else if (Build.VERSION.SDK_INT >= 23) {
                 V23.install(loader, files, dexDir,isHotFix);
-            }else if (Build.VERSION.SDK_INT >= 19) {
+            }else
+                if (Build.VERSION.SDK_INT >= 19) {
                 V19.install(loader, files, dexDir,isHotFix);
             } else if (Build.VERSION.SDK_INT >= 14) {
                 V14.install(loader, files, dexDir,isHotFix);
@@ -153,7 +160,27 @@ public class BundlePathLoader {
             jlrField.set(instance, combined);
         }
     }
+ private static final class V25 {
 
+        private static void install(ClassLoader loader, List<File> additionalClassPathEntries,
+                                    File optimizedDirectory,boolean isHotFix)
+                throws IllegalArgumentException, IllegalAccessException,
+                NoSuchFieldException, InvocationTargetException, NoSuchMethodException, InstantiationException, ClassNotFoundException {
+
+            Field pathListField = findField(loader, "pathList");
+            Object dexPathList = pathListField.get(loader);
+            Field dexElement = findField(dexPathList, "dexElements");
+            Class<?> elementType = dexElement.getType().getComponentType();
+            Method loadDex = findMethod(dexPathList, "loadDexFile", File.class, File.class,ClassLoader.class, Class.forName("[Ldalvik.system.DexPathList$Element;"));
+            Object dex = loadDex.invoke(dexPathList, additionalClassPathEntries.get(0), optimizedDirectory,loader,null);
+            Constructor<?> constructor = elementType.getConstructor(File.class, boolean.class, File.class, DexFile.class);
+            Object element = constructor.newInstance(new File(""), false, additionalClassPathEntries.get(0), dex);
+            Object[] newEles=new Object[1];
+            newEles[0]=element;
+            expandFieldArray(dexPathList, "dexElements",newEles,isHotFix);
+        }
+
+    }
 
     private static final class V23 {
 

@@ -44,7 +44,11 @@ public class DelegateResources extends Resources {
             }
             AssetManager assetManager = AssetManager.class.newInstance();
             for (String str : arrayList) {
-                SysHacks.AssetManager_addAssetPath.invoke(assetManager, str);
+                if(Build.VERSION.SDK_INT>=24) {
+                      SysHacks.AssetManager_addAssetPathAsSharedLibrary.invoke(assetManager, str);
+                }else{
+                    SysHacks.AssetManager_addAssetPath.invoke(assetManager, str);
+                }
             }
             //处理小米UI资源
             if (resources == null || !resources.getClass().getName().equals("android.content.res.MiuiResources")) {
